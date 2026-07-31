@@ -16,11 +16,6 @@ from matplotlib import pyplot as plt
 
 data = pd.read_csv("Banking_Transactions_USA_2023_2024.csv")
 
-# Analyzing Data Quality
-
-data.head()
-data.info() # Data has no null values
-
 data["Transaction_Date"] = pd.to_datetime(data["Transaction_Date"]) # Actual Date Format
 
 data.loc[data["Transaction_Type"] == "Debit", "Transaction_Amount"] *= -1
@@ -70,16 +65,6 @@ class Categories(BaseModel):
     categories: List[Category] = Field(
         description="List of categories. Must contain exactly one category for each input transaction description."
     )
-# prompt
-
-prompt = f"""
-Categorize all the given transaction descriptions.
-
-Return exactly the same no of categories in the same order.
-
-Descriptions:
-{data["Transaction_Description"]}
-"""
 
 # Retrying Decorater the API call
 
@@ -154,7 +139,7 @@ data["Category"] = all_categories
 
 # Make a clean Excel Sheet from it
 
-data.to_csv("Categorized Banking Transactions.xlsx")
+data.to_excel("Categorized Banking Transactions.xlsx", index=False)
 
 updated_data = pd.read_excel("Categorized Banking Transactions.xlsx")
 
@@ -185,20 +170,10 @@ with pd.ExcelWriter("report.xlsx") as writer:
 
 # Counts Bar Chart
 
-colors = [
-    "#4E79A7",
-    "#76B7B2",
-    "#59A14F",
-    "#EDC948",
-    "#F28E2B",
-    "#E15759",
-    "#B07AA1",
-    "#DED8D9"
-]
+colors = plt.cm.tab20(np.linspace(0, 1, len(summary)))
 
-counts = np.linspace(100,500,len(summary))
 plt.figure(figsize=(16,8))
-plt.bar(x=summary["Category"], height=counts, color=colors)
+plt.bar(x=summary["Category"], height=summary["Count"], color=colors)
 
 plt.xlabel("Categories")
 plt.ylabel("Count")
@@ -206,18 +181,8 @@ plt.title("Count of Categories")
 
 plt.savefig("Category_to_Count")
 
-colors = [
-    "#6BAED6",
-    "#9ECAE1",
-    "#C6DBEF",
-    "#74C476",
-    "#A1D99B",
-    "#31A354",
-]
-
-counts = np.linspace(-90312.52,74819.60,len(summary))
 plt.figure(figsize=(16,8))
-plt.bar(x=summary["Category"], height=counts, color=colors)
+plt.bar(x=summary["Category"], height=summary["Total_Amount"], color=colors)
 
 plt.xlabel("Categories")
 plt.ylabel("Net Transactions")
